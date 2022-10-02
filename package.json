@@ -1,16 +1,16 @@
 {
-  "name": "homebridge-dynamic-platform-example",
-  "version": "1.0.0",
-  "description": "An example dynamic platform plugin for homebridge written in Typescript",
+  "name": "homebridge-valetudo-zone",
+  "version": "0.0.0",
+  "description": "",
   "main": "dist/dynamic-platform.js",
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "rimraf ./dist && tsc",
-    "prepublishOnly": "npm run build",
-    "postpublish": "npm run clean",
+    "prepublishOnly": "yarn run build",
+    "postpublish": "yarn run clean",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Andreas Bauer <mail@anderl-bauer.de>",
+  "author": "Lars Lorenz <mail@larslorenz.dev>",
   "engines": {
     "homebridge": ">=1.0.0"
   },
@@ -21,14 +21,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/homebridge/homebridge-examples.git"
+    "url": "git@github.com:lorenzlars/homebridge-valetudo-zone.git"
   },
   "bugs": {
-    "url": "http://github.com/homebridge/homebridge-examples/issues"
+    "url": "https://github.com/lorenzlars/homebridge-valetudo-zone/issues"
   },
   "devDependencies": {
     "@types/node": "10.17.19",
     "homebridge": "^1.0.4",
+    "jest": "^29.1.2",
     "prettier": "2.7.1",
     "rimraf": "^3.0.2",
     "typescript": "^3.8.3"

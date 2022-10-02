@@ -29,6 +29,8 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
           `http://${"192.168.10.69"}/api/v2/robot/capabilities/MapSegmentationCapability`
         )
         .then((response) => {
+          log.debug(response.data);
+
           const uuid = api.hap.uuid.generate("SOMETHING UNIQUE");
           const accessory = new api.platformAccessory("DISPLAY NAME", uuid);
         });
