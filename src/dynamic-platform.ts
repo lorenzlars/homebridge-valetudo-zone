@@ -17,6 +17,14 @@ import axios from "axios";
 const PLUGIN_NAME = "homebridge-valetudo-zone";
 const PLATFORM_NAME = "ValetudoZone";
 
+let hap: HAP;
+
+export = (api: API) => {
+  hap = api.hap;
+
+  api.registerPlatform(PLATFORM_NAME, ExampleDynamicPlatform);
+};
+
 class ExampleDynamicPlatform implements DynamicPlatformPlugin {
   constructor(log: Logging, config: PlatformConfig, api: API) {
     log.info("ValetudoZone platform finished initializing!");
