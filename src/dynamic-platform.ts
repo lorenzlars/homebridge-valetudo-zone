@@ -34,7 +34,7 @@ class ExampleDynamicPlatform implements DynamicPlatformPlugin {
 
       axios
         .get(
-          `http://${"192.168.10.69"}/api/v2/robot/capabilities/MapSegmentationCapability`
+          `http://${config.ip}/api/v2/robot/capabilities/MapSegmentationCapability`
         )
         .then((response) => {
           log.debug(response.data);
