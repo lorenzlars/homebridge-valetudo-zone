@@ -11,6 +11,11 @@ import { ExampleSwitch } from "./switch";
 
 let hap: HAP;
 
+type MapSegmentationCapability = {
+  id: string;
+  name: string;
+};
+
 export = (api: API) => {
   hap = api.hap;
 
@@ -21,7 +26,7 @@ class ExampleDynamicPlatform implements StaticPlatformPlugin {
   private readonly ip: string;
   private readonly log: Logging;
 
-  constructor(log: Logging, config: PlatformConfig, api: API) {
+  constructor(log: Logging, config: PlatformConfig) {
     this.log = log;
 
     this.ip = config.ip;
@@ -40,13 +45,13 @@ class ExampleDynamicPlatform implements StaticPlatformPlugin {
       .get(
         `http://${this.ip}/api/v2/robot/capabilities/MapSegmentationCapability`
       )
-      .then((response) => {
-        this.log.info(response.data);
-      });
+      .then((response) => response.data as MapSegmentationCapability[])
+      .then((segements) => {
+        const accessories = segements.map(
+          (segment) => new ExampleSwitch(hap, this.log, segment.name)
+        );
 
-    callback([
-      new ExampleSwitch(hap, this.log, "Switch 1"),
-      new ExampleSwitch(hap, this.log, "Switch 2"),
-    ]);
+        callback(accessories);
+      });
   }
 }
