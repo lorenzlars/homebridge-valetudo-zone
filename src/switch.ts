@@ -1,18 +1,18 @@
 import {
   AccessoryPlugin,
+  CharacteristicEventTypes,
   CharacteristicGetCallback,
   CharacteristicSetCallback,
   CharacteristicValue,
   HAP,
   Logging,
   Service,
-  CharacteristicEventTypes,
 } from "homebridge";
+import { MapSegmentationCapability } from "./dynamic-platform";
+import axios from "axios";
 
-export class ExampleSwitch implements AccessoryPlugin {
+export class SegmentSwitch implements AccessoryPlugin {
   private readonly log: Logging;
-
-  private switchOn = false;
 
   // This property must be existent!!
   name: string;
@@ -20,39 +20,43 @@ export class ExampleSwitch implements AccessoryPlugin {
   private readonly switchService: Service;
   private readonly informationService: Service;
 
-  constructor(hap: HAP, log: Logging, name: string) {
+  constructor(
+    hap: HAP,
+    log: Logging,
+    capability: MapSegmentationCapability,
+    ip: string
+  ) {
     this.log = log;
-    this.name = name;
+    this.name = capability.name;
 
-    this.switchService = new hap.Service.Switch(name);
+    this.switchService = new hap.Service.Switch(`${capability.name} Clean`);
     this.switchService
       .getCharacteristic(hap.Characteristic.On)
-      .on(
-        CharacteristicEventTypes.GET,
-        (callback: CharacteristicGetCallback) => {
-          log.info(
-            "Current state of the switch was returned: " +
-              (this.switchOn ? "ON" : "OFF")
-          );
-          callback(undefined, this.switchOn);
-        }
+      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) =>
+        callback(undefined, false)
       )
       .on(
         CharacteristicEventTypes.SET,
         (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-          this.switchOn = value as boolean;
-          log.info(
-            "Switch state was set to: " + (this.switchOn ? "ON" : "OFF")
-          );
-          callback();
+          axios
+            .put(
+              `http://${ip}/api/v2/robot/capabilities/MapSegmentationCapability`,
+              {
+                action: "start_segment_action",
+                segment_ids: [capability.id],
+              }
+            )
+            .then(() => {
+              callback();
+            });
         }
       );
 
     this.informationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, "Custom Manufacturer")
-      .setCharacteristic(hap.Characteristic.Model, "Custom Model");
+      .setCharacteristic(hap.Characteristic.Manufacturer, "Valetudo")
+      .setCharacteristic(hap.Characteristic.Model, "Segment Clean");
 
-    log.info("Example switch '%s' created!", name);
+    log.info("Switch '%s' created!", `${capability.name} Clean`);
   }
 
   /*

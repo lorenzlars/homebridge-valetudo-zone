@@ -7,16 +7,16 @@ import {
   StaticPlatformPlugin,
 } from "homebridge";
 import axios from "axios";
-import { ExampleSwitch } from "./switch";
+import { SegmentSwitch } from "./switch";
 
 let hap: HAP;
 
-type MapSegmentationCapability = {
+export type MapSegmentationCapability = {
   id: string;
   name: string;
 };
 
-export = (api: API) => {
+export default (api: API) => {
   hap = api.hap;
 
   api.registerPlatform("ValetudoZone", ExampleDynamicPlatform);
@@ -48,7 +48,7 @@ class ExampleDynamicPlatform implements StaticPlatformPlugin {
       .then((response) => response.data as MapSegmentationCapability[])
       .then((segements) => {
         const accessories = segements.map(
-          (segment) => new ExampleSwitch(hap, this.log, segment.name)
+          (segment) => new SegmentSwitch(hap, this.log, segment, this.ip)
         );
 
         callback(accessories);
