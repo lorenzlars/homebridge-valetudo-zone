@@ -32,9 +32,11 @@ export class SegmentSwitch implements AccessoryPlugin {
           }
         );
 
-        this.switchService
-          .getCharacteristic(hap.Characteristic.On)
-          .setValue(false);
+        setTimeout(() => {
+          this.switchService
+            .getCharacteristic(hap.Characteristic.On)
+            .setValue(false);
+        }, 2000);
       })
       .onGet(() => false);
 
