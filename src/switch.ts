@@ -32,23 +32,25 @@ export class SegmentSwitch implements AccessoryPlugin {
     this.switchService = new hap.Service.Switch(`${capability.name} Clean`);
     this.switchService
       .getCharacteristic(hap.Characteristic.On)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) =>
-        callback(undefined, false)
-      )
       .on(
         CharacteristicEventTypes.SET,
-        (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-          axios
-            .put(
-              `http://${ip}/api/v2/robot/capabilities/MapSegmentationCapability`,
-              {
-                action: "start_segment_action",
-                segment_ids: [capability.id],
-              }
-            )
-            .then(() => {
-              callback();
-            });
+        async (
+          value: CharacteristicValue,
+          callback: CharacteristicSetCallback
+        ) => {
+          this.switchService.setCharacteristic(hap.Characteristic.On, true);
+
+          await axios.put(
+            `http://${ip}/api/v2/robot/capabilities/MapSegmentationCapability`,
+            {
+              action: "start_segment_action",
+              segment_ids: [capability.id],
+            }
+          );
+
+          this.switchService.setCharacteristic(hap.Characteristic.On, false);
+
+          callback();
         }
       );
 
