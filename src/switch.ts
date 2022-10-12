@@ -1,13 +1,4 @@
-import {
-  AccessoryPlugin,
-  CharacteristicEventTypes,
-  CharacteristicGetCallback,
-  CharacteristicSetCallback,
-  CharacteristicValue,
-  HAP,
-  Logging,
-  Service,
-} from "homebridge";
+import { AccessoryPlugin, HAP, Logging, Service } from "homebridge";
 import { MapSegmentationCapability } from "./dynamic-platform";
 import axios from "axios";
 
@@ -32,41 +23,26 @@ export class SegmentSwitch implements AccessoryPlugin {
     this.switchService = new hap.Service.Switch(`${capability.name} Clean`);
     this.switchService
       .getCharacteristic(hap.Characteristic.On)
-      .on(
-        CharacteristicEventTypes.SET,
-        async (
-          value: CharacteristicValue,
-          callback: CharacteristicSetCallback
-        ) => {
-          this.switchService.setCharacteristic(hap.Characteristic.On, true);
+      .onSet(async () => {
+        await axios.put(
+          `http://${ip}/api/v2/robot/capabilities/MapSegmentationCapability`,
+          {
+            action: "start_segment_action",
+            segment_ids: [capability.id],
+          }
+        );
 
-          await axios.put(
-            `http://${ip}/api/v2/robot/capabilities/MapSegmentationCapability`,
-            {
-              action: "start_segment_action",
-              segment_ids: [capability.id],
-            }
-          );
-
-          this.switchService.setCharacteristic(hap.Characteristic.On, false);
-
-          callback();
-        }
-      );
+        this.switchService
+          .getCharacteristic(hap.Characteristic.On)
+          .setValue(false);
+      })
+      .onGet(() => false);
 
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, "Valetudo")
       .setCharacteristic(hap.Characteristic.Model, "Segment Clean");
 
     log.info("Switch '%s' created!", `${capability.name} Clean`);
-  }
-
-  /*
-   * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
-   * Typical this only ever happens at the pairing process.
-   */
-  identify(): void {
-    this.log("Identify!");
   }
 
   /*
