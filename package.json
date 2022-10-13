@@ -1,12 +1,12 @@
 {
   "name": "homebridge-valetudo-zone",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A Homebridge plugin for Valetudo Vacuum Cleaner.",
   "keywords": ["homebridge-plugin"],
   "main": "dist/dynamic-platform.js",
   "scripts": {
     "clean": "rimraf ./dist",
-    "build": "rimraf ./dist && tsc",
+    "build": "rimraf ./dist && tsc | > /dev/null",
     "prepublishOnly": "yarn run build",
     "postpublish": "yarn run clean",
     "test": "echo \"Error: no test specified\" && exit 1"
