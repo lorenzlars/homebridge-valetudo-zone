@@ -41,8 +41,8 @@ export class SegmentSwitch implements AccessoryPlugin {
     );
     this.switchService
       .getCharacteristic(this.hap.Characteristic.On)
-      .onSet(this.setOnHandler)
-      .onGet(this.getOnHandler);
+      .onSet(this.setOnHandler);
+    // .onGet(this.getOnHandler);
 
     this.informationService = new this.hap.Service.AccessoryInformation()
       .setCharacteristic(this.hap.Characteristic.Manufacturer, "Valetudo")
@@ -80,6 +80,8 @@ export class SegmentSwitch implements AccessoryPlugin {
           segment_ids: [this.capability.id],
         }
       );
+
+      this.log.info(`${this.name} will be cleaned`);
     } else {
       await axios.put(
         `http://${this.ip}/api/v2/robot/capabilities/BasicControlCapability`,
@@ -94,6 +96,8 @@ export class SegmentSwitch implements AccessoryPlugin {
           ),
         2000
       );
+
+      this.log.info("Vacuum returning to the dock");
     }
 
     this.eventListener.forEach((eventListener) => {
@@ -103,6 +107,7 @@ export class SegmentSwitch implements AccessoryPlugin {
 
   public setState(value: boolean) {
     this.switchService.updateCharacteristic(this.hap.Characteristic.On, value);
+    this.log.info(`${this.name} Clean switch has been set to ${value}`);
   }
 
   public addEventListener(type: string, callback: (value: boolean) => void) {
