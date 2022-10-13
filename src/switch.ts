@@ -2,11 +2,18 @@ import { AccessoryPlugin, HAP, Logging, Service } from "homebridge";
 import { MapSegmentationCapability } from "./dynamic-platform";
 import axios from "axios";
 
+type Attributes = {
+  __class: "StatusStateAttribute";
+  value: string;
+};
+
 export class SegmentSwitch implements AccessoryPlugin {
   private readonly hap: HAP;
   private readonly log: Logging;
   private readonly capability: MapSegmentationCapability;
   private readonly ip: string;
+
+  private eventListener: ((value: boolean) => void)[];
 
   // This property must be existent!!
   name: string;
@@ -25,6 +32,8 @@ export class SegmentSwitch implements AccessoryPlugin {
     this.capability = capability;
     this.ip = ip;
 
+    this.eventListener = [];
+
     this.name = capability.name;
 
     this.switchService = new this.hap.Service.Switch(
@@ -32,8 +41,8 @@ export class SegmentSwitch implements AccessoryPlugin {
     );
     this.switchService
       .getCharacteristic(this.hap.Characteristic.On)
-      .onSet(this.setOnHandler.bind(this))
-      .onGet(this.getOnHandler.bind(this));
+      .onSet(this.setOnHandler)
+      .onGet(this.getOnHandler);
 
     this.informationService = new this.hap.Service.AccessoryInformation()
       .setCharacteristic(this.hap.Characteristic.Manufacturer, "Valetudo")
@@ -50,24 +59,58 @@ export class SegmentSwitch implements AccessoryPlugin {
     return [this.informationService, this.switchService];
   }
 
-  getOnHandler() {
-    return false;
+  async getOnHandler() {
+    const attributes = await axios
+      .get(`http://${this.ip}/api/v2/robot/state/attributes`)
+      .then((response) => response.data as Attributes[]);
+
+    return !!attributes.find(
+      (attribute) =>
+        attribute.__class === "StatusStateAttribute" &&
+        attribute.value !== "docked"
+    );
   }
 
   async setOnHandler(value: any) {
-    await axios.put(
-      `http://${this.ip}/api/v2/robot/capabilities/MapSegmentationCapability`,
-      {
-        action: "start_segment_action",
-        segment_ids: [this.capability.id],
-      }
-    );
-
-    setTimeout(() => {
-      this.switchService.updateCharacteristic(
-        this.hap.Characteristic.On,
-        false
+    if (value) {
+      await axios.put(
+        `http://${this.ip}/api/v2/robot/capabilities/MapSegmentationCapability`,
+        {
+          action: "start_segment_action",
+          segment_ids: [this.capability.id],
+        }
       );
-    }, 5000);
+    } else {
+      await axios.put(
+        `http://${this.ip}/api/v2/robot/capabilities/BasicControlCapability`,
+        { action: "pause" }
+      );
+
+      setTimeout(
+        async () =>
+          await axios.put(
+            `http://${this.ip}/api/v2/robot/capabilities/BasicControlCapability`,
+            { action: "home" }
+          ),
+        2000
+      );
+    }
+
+    this.eventListener.forEach((eventListener) => {
+      eventListener(value);
+    });
+  }
+
+  public setState(value: boolean) {
+    this.switchService.updateCharacteristic(this.hap.Characteristic.On, value);
+  }
+
+  public addEventListener(type: string, callback: (value: boolean) => void) {
+    // TODO: use the event type
+    this.eventListener.push(callback);
+  }
+
+  public removeEventListener() {
+    // TODO: Do I need this?
   }
 }

@@ -51,6 +51,16 @@ class ExampleDynamicPlatform implements StaticPlatformPlugin {
           (segment) => new SegmentSwitch(hap, this.log, segment, this.ip)
         );
 
+        accessories.forEach((accessory) => {
+          accessory.addEventListener("set", (value) => {
+            if (value) {
+              accessories.forEach((accessory) => {
+                accessory.setState(true);
+              });
+            }
+          });
+        });
+
         callback(accessories);
       });
   }
