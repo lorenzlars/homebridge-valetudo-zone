@@ -46,22 +46,33 @@ class ExampleDynamicPlatform implements StaticPlatformPlugin {
         `http://${this.ip}/api/v2/robot/capabilities/MapSegmentationCapability`
       )
       .then((response) => response.data as MapSegmentationCapability[])
-      .then((segements) => {
-        const accessories = segements.map(
+      .then((segments) => {
+        const accessories = segments.map(
           (segment) => new SegmentSwitch(hap, this.log, segment, this.ip)
         );
 
+        this.log.debug(`${accessories.length} accessories loaded`);
+
         accessories.forEach((accessory) => {
           accessory.addEventListener("set", (value) => {
+            this.log.debug(`Event set has been triggered with value ${value}`);
+
             if (value) {
               accessories.forEach((accessory) => {
                 accessory.setState(true);
               });
             }
           });
+
+          this.log.debug(`Event listener for ${accessory.name} added`);
         });
 
         callback(accessories);
+      })
+      .catch((error) => {
+        this.log.info("Vacuum is offline");
+
+        throw error;
       });
   }
 }

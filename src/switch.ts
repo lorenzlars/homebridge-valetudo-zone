@@ -41,8 +41,8 @@ export class SegmentSwitch implements AccessoryPlugin {
     );
     this.switchService
       .getCharacteristic(this.hap.Characteristic.On)
-      .onSet(this.setOnHandler);
-    // .onGet(this.getOnHandler);
+      .onSet(this.setOnHandler)
+      .onGet(this.getOnHandler);
 
     this.informationService = new this.hap.Service.AccessoryInformation()
       .setCharacteristic(this.hap.Characteristic.Manufacturer, "Valetudo")
@@ -113,6 +113,7 @@ export class SegmentSwitch implements AccessoryPlugin {
   public addEventListener(type: string, callback: (value: boolean) => void) {
     // TODO: use the event type
     this.eventListener.push(callback);
+    this.log.debug("Event listener added");
   }
 
   public removeEventListener() {
